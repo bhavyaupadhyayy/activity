@@ -1,0 +1,35 @@
+name: daily-activity
+
+on:
+  schedule:
+    - cron: "30 6 * * *"   # 06:30 UTC = 11:30 PM PDT / 10:30 PM PST
+  workflow_dispatch:        # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+env:
+  TZ: America/Los_Angeles
+  GRAPH_SEED: "21"          # must match what you used for the backfill
+  GRAPH_START: "2025-09-27" # must match what you used for the backfill
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Configure commit author
+        run: |
+          git config user.name  "${{ vars.COMMIT_NAME }}"
+          git config user.email "${{ vars.COMMIT_EMAIL }}"
+
+      - name: Commit today's activity
+        run: python humanlike_commits.py --seed "$GRAPH_SEED" --start "$GRAPH_START" --today
+
+      - name: Push
+        run: git push
