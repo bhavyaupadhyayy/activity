@@ -73,7 +73,10 @@ def marker(day: date) -> str:
 
 
 def gh(*args: str) -> str:
-    return subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
+    result = subprocess.run(["gh", *args], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f"gh {' '.join(args[:2])} failed: {result.stderr.strip()}")
+    return result.stdout
 
 
 def git(*args: str) -> None:
