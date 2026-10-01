@@ -1,0 +1,39 @@
+name: github-activity
+
+on:
+  schedule:
+    - cron: "0 19 * * *"   # 19:00 UTC = 12:00 PM PDT / 11:00 AM PST
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Open one issue and one PR now (testing)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read            # real work uses ACTIVITY_TOKEN so items are authored by you
+
+env:
+  TZ: America/Los_Angeles
+  GRAPH_SEED: "21"
+  GH_TOKEN: ${{ secrets.ACTIVITY_TOKEN }}
+
+jobs:
+  activity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACTIVITY_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Configure commit author
+        run: |
+          git config user.name  "${{ vars.COMMIT_NAME }}"
+          git config user.email "${{ vars.COMMIT_EMAIL }}"
+
+      - name: Open, close and merge issues and PRs
+        run: python humanlike_github_activity.py --seed "$GRAPH_SEED" ${{ inputs.force && '--force' || '' }}
