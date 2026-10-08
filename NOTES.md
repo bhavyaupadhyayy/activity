@@ -1,1 +1,2 @@
 - 2026-10-01: Minor wording fix.
+- 2026-10-08: Add a reminder for an open item.
